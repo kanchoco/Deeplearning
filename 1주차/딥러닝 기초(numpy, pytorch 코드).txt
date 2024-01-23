@@ -1,0 +1,202 @@
+인공신경망
+
+분류는 특징으로부터 온다
+
+기존 분류 방법
+w를 결정하는 것이 가장 어려운 문제
+각 특징의 역할을 결정해야함 -> algorithm 설계
+
+기존의 기계 학습 Semi-implict method
+학습을 통해 w를 결정함(Implict)
+어떤 요소가 x에 포함되는지 결정해야함(Explict)
+
+심층학습 implicit method
+학습(훈련, training)을 통해서 w를 결정
+어떤 요소가 x에 포함되는지 학습을 통해서 결정함
+
+인공신경망의 이론
+
+인공 신경망의 구현 4단계
+1) 인공 신경망 모델 정의
+- 인공신경망의 구조를 모델 표현
+- 다양한 라이브러리를 이용한 모델 정의
+
+2) 데이터 로딩
+- 미리 저장된 대용량의 데이터를 읽어 들임
+
+3) 훈련
+- 가장 많은 시간이 요구됨
+- forward propagation : 모델에 데이터 적용 -> Loss 함수 계산
+- Backward propagation : Gradient 계산 -> Gradoemt descemt 수행
+
+4) 테스트(실행)
+- 훈련이 끝난 파라미터를 이용해서 모델 수행(Forward propagation)
+
+forward propagation
+- 주어진 특징에 대해서 w를 적용해서 예측 레이블(predicted label, y^)을 계산
+- 실제 레이블 (True label, y)과 비교 -> Loss함수
+
+backward propagation
+- 파라미터가 Loss함수에 미치는 영향을 계산 -> Gradient 계산
+- Gradient descent를 적용해서 w값 갱신
+
+w를 초기화 하는 방법 3가지
+1. random number
+2. uniform number(0.5)
+
+#기본 넘파이 코드
+import numpy as np
+''' N - 데이터 수
+   Din - 특징의 수
+   Dout - 출력, 인식할 label의 개수 '''
+N, Din, Dout = 64, 4, 2
+
+x = np.random.randn(N, Din)
+y = np.random.randn(N, Dout)
+w = np.random.randn(Din, Dout)
+lr = 1e-6
+
+for t in range(5000) :
+	# y_pred 계산
+	y_pred = np.matmul(x,w)
+	# loss 계산
+	loss = (0.5*(y_pred - y)**2).sum()
+
+	# gradient 계산
+	grad_y_pred = (y_pred - y)
+	grad_w = np.matnul(np.transpose(x), grad_y_pred)
+	# gradient descent수행
+	w -= lr*grad_w
+
+
+Pytorch 코드
+
+# 기본코드 (점점 업데이트)
+
+import torch
+device=torch.device('cpu')
+N, Din, Dout = 64, 4, 2
+
+# data loading
+x = torch.randn(N, Din, device=device)
+y = torch.randn(N, Dout, device=device)
+w = torch.randn(Din, Dout, device=device)
+
+lr= 1e-6
+# training
+for t in range(5000) :
+	# y_pred 계산
+	y_pred = x.mm(w)
+	# loss 계산 
+	loss = 0.5*(y_pred-y).pow(2).sum()
+	# gradient 계산
+	grad_y_pred = (y_pred - y)
+	grad_w = x.t().mm(grad_y_pred)
+	# gradient descent
+	w-=lr*grad_W
+
+# autograd를 사용한 버전
+
+for t in range(5000) :
+	# y_pred 계산
+	y_pred = x.mm(w)
+	# loss 계산 
+	loss = 0.5*(y_pred-y).pow(2).sum()
+	# gradient 계산
+	loss.backward()
+	# gradient descent
+	with torch.no_grad():
+		w -= lr*w.grad
+		# 초기화
+		w.grad.zero_()
+
+# nn라이브러리 이용
+import torch
+
+device = torch.device('cpu')
+
+N, Din, Dout = 64, 4, 2
+
+x = torch.randn(N, Din, device=device)
+y = torch.randn(N, Dout, device=device)
+
+# Sequential여러개의 모델을 중첩할 때 쓰는 함수
+# w를 선언하지 않는 이유 : Linear의 weight가 w의 역할을 하기 때문
+model = torch.nn.Sequential( 
+torch.nn.Linear(Din, Dout) )
+lr = 1e-6
+
+for t in range(5000) :
+	y_pred = model(x)
+	loss = torch.nn.functional.mse_loss (y_pred, y)
+	
+	loss.backward()
+
+	with torch.no_grad()
+		for param in model.parameters() :
+			param -= lr * param.grad
+	model.zero_grad()
+
+# Optimizer 이용
+
+import torch
+
+device = torch.device('cpu')
+
+N, Din, Dout = 64, 4, 2
+
+x = torch.randn(N, Din, device=device)
+y = torch.randn(N, Dout, device=device)
+
+# Sequential여러개의 모델을 중첩할 때 쓰는 함수
+# w를 선언하지 않는 이유 : Linear의 weight가 w의 역할을 하기 때문
+model = torch.nn.Sequential( 
+torch.nn.Linear(Din, Dout) )
+lr = 1e-6
+# optimizer 선언
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+for t in range(5000) :
+	y_pred = model(x)
+	loss = torch.nn.functional.mse_loss (y_pred, y)
+	
+	loss.backward()
+	# optimizer를 사용해서 gradient와 gradient descent 수행
+	optimizer.step()
+	# 초기화
+	optimizer.zero_grad()
+
+# nn.Module 사용하기
+
+import torch
+
+device = torch.device('cpu')
+
+# 상속받아서 데이터로딩하기(복잡할때 사용)
+class MyOneLayerNet(torch.nn.Module):
+	def __init__(self, Din, Dout):
+		super(MyOneLayerNet, self).__init__()
+		self.linear = torch.nn.Linear(Din, Dout)
+	def forward (self, x):
+		y_pred = self.linear(x)
+		return y_pred
+
+N, Din, Dout = 64, 4, 2
+
+x = torch.randn(N, Din, device=device)
+y = torch.randn(N, Dout, device=device)
+
+model = MyOneLayerNet(Din, Dout)
+# optimizer 선언
+optimizer = torch.optim.Adam(model.parameters(), lr= 1e-6)
+
+for t in range(5000) :
+	y_pred = model(x)
+	loss = torch.nn.functional.mse_loss (y_pred, y)
+	
+	loss.backward()
+	# optimizer를 사용해서 gradient와 gradient descent 수행
+	optimizer.step()
+	# 초기화
+	optimizer.zero_grad()
+

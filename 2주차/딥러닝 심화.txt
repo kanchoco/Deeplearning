@@ -1,0 +1,55 @@
+세상 단순한 영상 인식의 원리
+- LeNet5를 이용한 CNN
+
+영상 인식의 원리
+- 영상으로부터 추출한 특징을 비교해서 각 Label의 predicted probability를 계산
+- 단순한 특징에서 복합적인 특징까지 단계별로 특징을 추출함
+
+특징 추출
+- 적절한 필터를 곱해서 나온 값 -> 특징
+- 필터를 적용한 특징 추출
+   -> image의 각 원소에 값을 곱해서 더하는 연산을 수행
+
+필터를 결정하는 방법
+- explicit method : 사람이 적절한 필터 값을 계산
+- implicit method : 학습을 통해서 적절한 필터 값을 결정
+
+---------------------
+CNN 원리
+
+최초의 CNN -> LeNet5(1998)
+
+- Convolution -> 특징(feature map)추출
+- Subsampling(Pooling) -> 특징의 정보 압축
+- Activation -> 중요하지 않은 특징 제거
+- Full connection -> 최종 결정
+
+----------------------
+
+CNN in pytorch
+
+torch.nn.Conv2d(in_cannels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros')
+
+------------
+Transposed Convolution
+
+- Inverse Convolution with 3x3 filter
+- Convolution filter의 transposed matrix를 곱함
+- 영상의 크기가 커지는 연산
+
+-----------------
+#Convolution layer
+nn.Conv2d(1, 6, kernel_size=5, stride=1)
+nn.Conv2d(6, 16, kernel_size=5, stide=1)
+nn.Conv2d(16, 120, kernel_size=5, stride=1)
+
+#Pooling layer
+'''F는 pytorch에서 제공하는 함수들의 집합
+ average pooling사용
+'''
+F.avg_pool2d(x,2,2)
+F.avg_pool2d(x,2,2)
+
+#Fully connected layer
+nn.Linear(120, 84)
+nn.Linear(84, 10)
